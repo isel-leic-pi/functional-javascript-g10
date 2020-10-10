@@ -8,7 +8,7 @@ function checkUsersValid(goodUsers) {
 
     */
     return function allUsersValid(submittedUsers) {
-        return submittedUsers.every(id => goodUsers.some(goodId => id == goodId));
+        return submittedUsers.every(submited => goodUsers.some(goodUser => submited.id == goodUser.id));
     };
 }
 
