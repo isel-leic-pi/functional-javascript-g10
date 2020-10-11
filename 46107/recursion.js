@@ -1,20 +1,33 @@
-/*
- Can't alter the reduce function signature, which would be useful in this case to pass the index, 
- but anyway, we'll save the index outside of the function. I don't like this...
-
- EDIT: Solution suggested creating another function inside the reduce function. For the sake of preservation,
- I'll keep this solution.
-*/
-var index = ' ';
-
-function reduce(arr, fn, initial) {
-    if (index === ' ') index = arr.length;
+function getDependencies(tree, name) {
+    if (!tree) return;
     
-    --index;
-    if (index <= 0) { return fn(initial, arr[index], index++, arr); }
-    initial = reduce(arr, fn, initial);
-    
-    return fn(initial, arr[index], index++, arr);
+    let keys = Object.keys(tree);
+
+    var arr = [];
+    if (keys.includes('dependencies')) {
+        keys = Object.keys(tree.dependencies);
+        arr = getDependencies(tree.dependencies[keys[0]], keys[0]);
+        if (keys.length > 1) {
+            arr = arr.concat(getDependencies(tree.dependencies[keys[1]], keys[1]));
+        }
+    }
+
+    if (!name) {
+        return arr.sort();
+    } else {
+        arr.push(name + '@' + tree.version);
+        return arr.sort();
+    }
 }
 
-module.exports = reduce;
+var test = {
+    version: '0.1.1',
+    dependencies: {
+        optimist: { version: '0.3.7', dependencies: [Object] },
+        inflection: { version: '1.2.6' }
+    }
+};
+
+//console.log(getDependencies(test));
+
+module.exports = getDependencies;
