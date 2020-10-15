@@ -1,37 +1,23 @@
 function getDependencies(tree) {
     let dependencies = [];
     dependenciesHelper(tree, dependencies);
-    return dependencies;
+    return dependencies.sort();
 }
 
 function dependenciesHelper(tree, dependencies) {
-    if(tree === undefined) {
-        return dependencies;
+    // Check if the tree has dependencies
+    if(Object.prototype.hasOwnProperty.call(tree, 'dependencies')) {
+        // For each object in the dependency property
+        Object.keys(tree['dependencies']).forEach((dependency) => {
+            let dependencyObject = tree.dependencies[dependency];
+            // Create the description that will be added to the array
+            let description = dependency + '@' + dependencyObject.version;
+            // If the description is not yet in the array, push it
+            if(!dependencies.includes(description)) dependencies.push(description);
+            // Repeat the process for the other dependencies 
+            dependenciesHelper(dependencyObject, dependencies);
+        });
     }
-    let keys = Object.keys(tree);
-    if(keys.includes('dependencies')){
-        //obtain inner dependencies
-        let dependency = tree['dependencies'];
-    } 
-    dependenciesHelper(undefined, dependencies);
 }
 
-var loremIpsum = {
-    'name': 'lorem-ipsum',
-    'version': '0.1.1',
-    'dependencies': {
-        'optimist': {
-            'version': '0.3.7',
-            'dependencies': {
-                'wordwrap': {
-                    'version': '0.0.2'
-                }
-            }
-        },
-        'inflection': {
-            'version': '1.2.6'
-        }
-    }
-};
-
-getDependencies(loremIpsum); // => [ 'inflection@1.2.6', 'optimist@0.3.7', 'wordwrap@0.0.2' ]
+module.exports = getDependencies;
