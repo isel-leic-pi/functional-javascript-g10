@@ -1,33 +1,23 @@
-function getDependencies(tree, name) {
+function getDependencies(tree, isDependency, arr) {
     if (!tree) return;
+
+    let res = arr || [];
+
+    if (Object.keys(tree).includes('dependencies')) {
+        res = getDependencies(tree.dependencies, true, res);
+    }
     
-    let keys = Object.keys(tree);
-
-    var arr = [];
-    if (keys.includes('dependencies')) {
-        keys = Object.keys(tree.dependencies);
-        arr = getDependencies(tree.dependencies[keys[0]], keys[0]);
-        if (keys.length > 1) {
-            arr = arr.concat(getDependencies(tree.dependencies[keys[1]], keys[1]));
-        }
+    if (isDependency) {
+        Object.keys(tree).forEach(function(prop) {
+            let currProp = tree[prop];
+            let str = prop + '@' + currProp.version;
+            if (res.indexOf(str) === -1) res.push(str);
+            if (Object.keys(currProp).includes('dependencies')) {
+                getDependencies(currProp.dependencies, true, res);
+            }
+        });
     }
-
-    if (!name) {
-        return arr.sort();
-    } else {
-        arr.push(name + '@' + tree.version);
-        return arr.sort();
-    }
+    return res.sort();
 }
-
-var test = {
-    version: '0.1.1',
-    dependencies: {
-        optimist: { version: '0.3.7', dependencies: [Object] },
-        inflection: { version: '1.2.6' }
-    }
-};
-
-//console.log(getDependencies(test));
 
 module.exports = getDependencies;
